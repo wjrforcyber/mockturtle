@@ -2,8 +2,11 @@ name: Linux CI
 
 on:
   push:
+    branches:
+    - master
   pull_request:
   merge_group:
+
 
 jobs:
   build_and_test:
