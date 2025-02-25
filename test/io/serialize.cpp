@@ -101,7 +101,7 @@ TEST_CASE( "write errors are propagated", "[serialize]" )
       break;
     }
     phmap::BinaryOutputArchive output ( file_name );
-    CHECK_FALSE( serialize_network_fallible( aig, output ) );
+    CHECK( serialize_network_fallible( aig, output ) );
   }
 }
 
@@ -119,6 +119,6 @@ TEST_CASE( "read errors are propagated", "[serialize]" )
       break;
     }
     phmap::BinaryInputArchive input ( file_name );
-    CHECK_FALSE( deserialize_network_fallible( input ).has_value() );
+    CHECK( deserialize_network_fallible( input ).has_value() );
   }
 }
