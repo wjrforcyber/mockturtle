@@ -547,7 +547,7 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
       return return_code::parse_error;
     }
     const auto next_lit = std::atol( std::string( tokens[1u] ).c_str() );
-    if ( !check_index_bound( index, 2 * _m + 1 ) )
+    if ( !check_index_bound( next_lit, 2 * _m + 1 ) )
     {
       return return_code::parse_error;
     }
