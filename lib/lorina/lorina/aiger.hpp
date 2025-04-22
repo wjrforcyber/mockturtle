@@ -443,7 +443,7 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
 
 /*! \brief Validity check on index of the literal/indexs.
  *
- * Give a literal/index and the upper bound of the literal/index.
+ * Give a literal/index and the lower and upper bound of the literal/index.
  *
  * \param index Value of the literal/index
  * \param l_bound Lower bound of the literal/index
