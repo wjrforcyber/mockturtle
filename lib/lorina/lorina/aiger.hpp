@@ -441,17 +441,18 @@ static std::regex justice( R"(^j(\d+) (.*)$)" );
 static std::regex fairness( R"(^f(\d+) (.*)$)" );
 } // namespace aig_regex
 
-/*! \brief Function that checks index of the literal/indexs.
+/*! \brief Validity check on index of the literal/indexs.
  *
- * Give a literal/index and the bound of the literal/index.
+ * Give a literal/index and the upper bound of the literal/index.
  *
  * \param index Value of the literal/index
- * \param bound Upper bound of the literal/index
+ * \param l_bound Lower bound of the literal/index
+ * \param u_bound Upper bound of the literal/index
  * \return Success if parsing has been successful, or parse error if parsing has failed
  */
-[[nodiscard]] inline bool check_index_bound( uint64_t index, uint64_t bound )
+[[nodiscard]] inline bool check_index_validity( long index, uint64_t l_bound, uint64_t u_bound )
 {
-  if ( index > bound )
+  if ( index < 0 || index < l_bound || index > u_bound )
   {
     return false;
   }
@@ -519,7 +520,7 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
   {
     detail::getline( in, line );
     const auto index = std::atol( line.c_str() );
-    if ( !check_index_bound( index, 2 * _m + 1 ) )
+    if ( !check_index_validity( index, 2, 2 * _m + 1 ) )
     {
       return return_code::parse_error;
     }
@@ -542,12 +543,12 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
     }
 
     const auto index = std::atol( std::string( tokens[0u] ).c_str() ) / 2u;
-    if ( !check_index_bound( index, _m ) )
+    if ( !check_index_validity( index, 0, _m ) )
     {
       return return_code::parse_error;
     }
     const auto next_lit = std::atol( std::string( tokens[1u] ).c_str() );
-    if ( !check_index_bound( next_lit, 2 * _m + 1 ) )
+    if ( !check_index_validity( next_lit, 2, 2 * _m + 1 ) )
     {
       return return_code::parse_error;
     }
@@ -573,7 +574,7 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
   {
     detail::getline( in, line );
     const auto lit = std::atol( line.c_str() );
-    if ( !check_index_bound( lit, 2 * _m + 1 ) )
+    if ( !check_index_validity( lit, 2, 2 * _m + 1 ) )
     {
       return return_code::parse_error;
     }
