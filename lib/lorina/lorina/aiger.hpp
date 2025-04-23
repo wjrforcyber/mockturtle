@@ -441,7 +441,7 @@ static std::regex justice( R"(^j(\d+) (.*)$)" );
 static std::regex fairness( R"(^f(\d+) (.*)$)" );
 } // namespace aig_regex
 
-/*! \brief Validity check on index of the literal/indexs.
+/*! \brief Validity check on index of the literal/index.
  *
  * Give a literal/index and the lower and upper bound of the literal/index.
  *
