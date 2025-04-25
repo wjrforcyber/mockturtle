@@ -452,7 +452,7 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
  */
 [[nodiscard]] inline bool check_index_validity( long index, uint64_t l_bound, uint64_t u_bound )
 {
-  if ( index < 0 || index < l_bound || index > u_bound )
+  if ( index < 0 || index < static_cast<long>(l_bound) || index > static_cast<long>(u_bound) )
   {
     return false;
   }
