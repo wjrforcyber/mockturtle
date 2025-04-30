@@ -35,8 +35,9 @@
 #pragma once
 
 #include "common.hpp"
-#include "diagnostics.hpp"
 #include "detail/utils.hpp"
+#include "diagnostics.hpp"
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -55,8 +56,10 @@ public:
   enum latch_init_value
   {
     ZERO = 0 /*!< Initialized with 0 */
-  , ONE /*!< Initialized with 1 */
-  , NONDETERMINISTIC /*!< Not initialized (non-deterministic value) */
+    ,
+    ONE /*!< Initialized with 1 */
+    ,
+    NONDETERMINISTIC /*!< Not initialized (non-deterministic value) */
   };
 
 public:
@@ -329,7 +332,7 @@ public:
   void on_latch( uint32_t index, uint32_t next, latch_init_value init_value ) const override
   {
     _os << ( 2u * index ) << ' ' << next;
-    switch( init_value )
+    switch ( init_value )
     {
     case 0:
       _os << '0';
@@ -423,7 +426,7 @@ public:
   }
 
   std::ostream& _os; /*!< Output stream */
-}; /* ascii_aiger_pretty_printer */
+};                   /* ascii_aiger_pretty_printer */
 
 namespace aig_regex
 {
@@ -437,6 +440,24 @@ static std::regex constraint( R"(^c(\d+) (.*)$)" );
 static std::regex justice( R"(^j(\d+) (.*)$)" );
 static std::regex fairness( R"(^f(\d+) (.*)$)" );
 } // namespace aig_regex
+
+/*! \brief Validity check on index of the literal/index.
+ *
+ * Give a literal/index and the lower and upper bound of the literal/index.
+ *
+ * \param index Value of the literal/index
+ * \param l_bound Lower bound of the literal/index
+ * \param u_bound Upper bound of the literal/index
+ * \return Success if parsing has been successful, or parse error if parsing has failed
+ */
+[[nodiscard]] inline bool check_index_validity( long index, uint64_t l_bound, uint64_t u_bound )
+{
+  if ( index < 0 || index < static_cast<long>(l_bound) || index > static_cast<long>(u_bound) )
+  {
+    return false;
+  }
+  return true;
+}
 
 /*! \brief Reader function for ASCII AIGER format.
  *
@@ -499,6 +520,10 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
   {
     detail::getline( in, line );
     const auto index = std::atol( line.c_str() );
+    if ( !check_index_validity( index, 2, 2 * _m + 1 ) )
+    {
+      return return_code::parse_error;
+    }
     reader.on_input( i, index );
   }
 
@@ -506,9 +531,9 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
   for ( auto i = 0ul; i < _l; ++i )
   {
     detail::getline( in, line );
-    const auto tokens = detail::split( line,  " " );
+    const auto tokens = detail::split( line, " " );
 
-    if ( !(tokens.size() <= 3u) )
+    if ( !( tokens.size() <= 3u ) )
     {
       if ( diag )
       {
@@ -517,8 +542,16 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
       return return_code::parse_error;
     }
 
-    const auto index = std::atol( std::string(tokens[0u]).c_str() ) / 2u;
-    const auto next_lit = std::atol( std::string(tokens[1u]).c_str() );
+    const auto index = std::atol( std::string( tokens[0u] ).c_str() ) / 2u;
+    if ( !check_index_validity( index, 0, _m ) )
+    {
+      return return_code::parse_error;
+    }
+    const auto next_lit = std::atol( std::string( tokens[1u] ).c_str() );
+    if ( !check_index_validity( next_lit, 2, 2 * _m + 1 ) )
+    {
+      return return_code::parse_error;
+    }
 
     aiger_reader::latch_init_value init_value = aiger_reader::latch_init_value::NONDETERMINISTIC;
     if ( tokens.size() == 3u )
@@ -541,6 +574,10 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
   {
     detail::getline( in, line );
     const auto lit = std::atol( line.c_str() );
+    if ( !check_index_validity( lit, 2, 2 * _m + 1 ) )
+    {
+      return return_code::parse_error;
+    }
     reader.on_output( i, lit );
   }
 
@@ -596,7 +633,7 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
     detail::getline( in, line );
     const auto tokens = detail::split( line, " " );
 
-    if ( !(tokens.size() == 3u) )
+    if ( !( tokens.size() == 3u ) )
     {
       if ( diag )
       {
@@ -605,9 +642,9 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
       return return_code::parse_error;
     }
 
-    const auto index = std::atol( std::string(tokens[0u]).c_str() )/2u;
-    const auto left_lit = std::atol( std::string(tokens[1u]).c_str() );
-    const auto right_lit = std::atol( std::string(tokens[2u]).c_str() );
+    const auto index = std::atol( std::string( tokens[0u] ).c_str() ) / 2u;
+    const auto left_lit = std::atol( std::string( tokens[1u] ).c_str() );
+    const auto right_lit = std::atol( std::string( tokens[2u] ).c_str() );
     reader.on_and( index, left_lit, right_lit );
   }
 
@@ -745,7 +782,7 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
   /* inputs */
   for ( auto i = 0u; i < _i; ++i )
   {
-    reader.on_input( i, 2u*(i+1) );
+    reader.on_input( i, 2u * ( i + 1 ) );
   }
 
   /* latches */
