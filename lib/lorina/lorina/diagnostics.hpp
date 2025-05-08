@@ -84,6 +84,13 @@ public:
    */
   virtual inline void emit( diag_id id, std::vector<std::string> const& args = {} ) const;
 
+  /*! \brief Collect a single message.
+   *
+   * \param id ID of diagnostic
+   * \param args Arguments
+   */
+  virtual inline void collect_single_msg( diag_id id, std::vector<std::string> const& args = {} );
+
   /*! \brief Create custom diagnostic.
    *
    * \param level Severity level
@@ -93,6 +100,9 @@ public:
 
   /*! \brief Return the number of emitted diagnostics. */
   uint64_t get_num_diagnostics() const;
+
+  /*! \brief Return the collected messages. */
+  std::string get_all_messages();
 
 private:
   /*! \brief Emit diagnostics with static ID.
@@ -109,11 +119,19 @@ private:
    */
   void emit_custom_diagnostic( diag_id id, std::vector<std::string> const& args ) const;
 
+  /*! \brief Collect all ids and messages
+   *
+   * \param original_diag_ids_args All pairs of the (id, message)
+   */
+  void collect_messages( std::vector<std::pair<diag_id, std::vector<std::string>>> original_diag_ids_args );
+
 protected:
   diagnostic_consumer *client_ = nullptr;  /*!< Diagnostic client. */
   std::vector<desc_type> custom_diag_info; /*!< Custom diagnostics. */
   std::map<desc_type, diag_id> custom_diag_ids; /*!< Map from custom ID to diagnostic. */
   mutable uint64_t num_diagnostics{0};
+  std::vector<std::pair<diag_id, std::vector<std::string>>> original_diag_ids_args;
+  std::string all_messages;
 }; /* diagnostic_engine */
 
 /*! \brief A builder for diagnostics.
@@ -227,6 +245,7 @@ inline diagnostic_builder::diagnostic_builder( diagnostic_engine& engine, diag_i
 inline diagnostic_builder::~diagnostic_builder()
 {
   engine_.emit( id_, args_ );
+  engine_.collect_single_msg( id_, args_ );
 }
 
 inline diagnostic_builder& diagnostic_builder::add_argument( std::string const& s )
@@ -252,6 +271,12 @@ inline diag_id diagnostic_engine::create_id( diagnostic_level level, std::string
 inline uint64_t diagnostic_engine::get_num_diagnostics() const
 {
   return num_diagnostics;
+}
+
+inline std::string diagnostic_engine::get_all_messages()
+{
+  collect_messages( original_diag_ids_args );
+  return all_messages;
 }
 
 inline diagnostic_builder diagnostic_engine::report( diag_id id )
@@ -317,6 +342,30 @@ inline void diagnostic_engine::emit( diag_id id, std::vector<std::string> const&
   else
   {
     emit_custom_diagnostic( id, args );
+  }
+}
+
+inline void diagnostic_engine::collect_single_msg( diag_id id, std::vector<std::string> const& args )
+{
+    std::pair<diag_id, std::vector<std::string>> collects_ids_args;
+    collects_ids_args.first = id;
+    collects_ids_args.second = args;
+    original_diag_ids_args.push_back( collects_ids_args );
+}
+
+inline void diagnostic_engine::collect_messages( std::vector<std::pair<diag_id, std::vector<std::string>>> original_diag_ids_args )
+{
+  for ( auto i = 0; i < original_diag_ids_args.size(); i++ )
+  {
+    auto item = original_diag_ids_args[i];
+    lorina::diagnostic_level const level = lorina::diag_info[uint32_t( item.first )].first;
+    std::string message = lorina::diag_info[uint32_t( item.first )].second;
+    auto args = item.second;
+    for ( auto j = 0; j < args.size(); j++ )
+    {
+      message = fmt::format( message, args[j] );
+    }
+    all_messages += ( message + "\n" );
   }
 }
 
