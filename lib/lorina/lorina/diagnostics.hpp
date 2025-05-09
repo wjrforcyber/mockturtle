@@ -123,7 +123,7 @@ private:
    *
    * \param original_diag_ids_args All pairs of the (id, message)
    */
-  void collect_messages( std::vector<std::pair<diag_id, std::vector<std::string>>> original_diag_ids_args );
+  void collect_messages( const std::vector<std::pair<diag_id, std::vector<std::string>>>& original_diag_ids_args );
 
 protected:
   diagnostic_consumer *client_ = nullptr;  /*!< Diagnostic client. */
@@ -275,6 +275,7 @@ inline uint64_t diagnostic_engine::get_num_diagnostics() const
 
 inline std::string diagnostic_engine::get_all_messages()
 {
+  all_messages.clear();
   collect_messages( original_diag_ids_args );
   return all_messages;
 }
@@ -353,7 +354,7 @@ inline void diagnostic_engine::collect_single_msg( diag_id id, std::vector<std::
     original_diag_ids_args.push_back( collects_ids_args );
 }
 
-inline void diagnostic_engine::collect_messages( std::vector<std::pair<diag_id, std::vector<std::string>>> original_diag_ids_args )
+inline void diagnostic_engine::collect_messages( const std::vector<std::pair<diag_id, std::vector<std::string>>>& original_diag_ids_args )
 {
   for ( auto i = 0; i < original_diag_ids_args.size(); i++ )
   {
