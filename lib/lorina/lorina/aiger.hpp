@@ -547,7 +547,7 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
     }
 
     const auto index = std::atol( std::string( tokens[0u] ).c_str() ) / 2u;
-    if ( !check_index_validity( index, 2 * _i + 2, 2 * _m + 1 ) )
+    if ( !check_index_validity( index, _i + 1, _m + 1 ) )
     {
       if ( diag )
       {
@@ -556,7 +556,7 @@ static std::regex fairness( R"(^f(\d+) (.*)$)" );
       return return_code::parse_error;
     }
     const auto next_lit = std::atol( std::string( tokens[1u] ).c_str() );
-    if ( !check_index_validity( next_lit, index + 1, 2 * _m + 1 ) )
+    if ( !check_index_validity( next_lit, index, _m + 1 ) )
     {
       if ( diag )
       {
