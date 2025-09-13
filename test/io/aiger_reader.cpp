@@ -45,7 +45,75 @@ TEST_CASE( "read and write names", "[aiger_reader]" )
   CHECK( named_aig.get_output_name( 1 ) == "y1" );
 }
 
-TEST_CASE( "out-of-bounds index", "[aiger_reader]" )
+TEST_CASE( "header: Wrong number of items in header", "[aiger_reader]" )
+{
+  aig_network aig;
+
+  std::string file{ "aag 3 1 1\n"
+                    "2\n"
+                    "3\n"
+                    "7\n"
+                    "6 3 5\n" };
+
+  std::istringstream in( file );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
+  CHECK( result == lorina::return_code::parse_error );
+}
+
+TEST_CASE( "header: negative number", "[aiger_reader]" )
+{
+  aig_network aig;
+
+  std::string file{ "aag 3 -2 0 1 1\n"
+                    "2\n"
+                    "3\n"
+                    "7\n"
+                    "6 3 5\n" };
+
+  std::istringstream in( file );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
+  CHECK( result == lorina::return_code::parse_error );
+}
+
+TEST_CASE( "header: non-digit", "[aiger_reader]" )
+{
+  aig_network aig;
+
+  std::string file{ "aag 3 test 0 1 1\n"
+                    "2\n"
+                    "3\n"
+                    "7\n"
+                    "6 3 5\n" };
+
+  std::istringstream in( file );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
+  CHECK( result == lorina::return_code::parse_error );
+}
+
+TEST_CASE( "output: out-of-bounds index", "[aiger_reader]" )
+{
+  aig_network aig;
+
+  std::string file{ "aag 3 2 0 1 1\n"
+                    "2\n"
+                    "3\n"
+                    "8\n"
+                    "6 3 5\n" };
+
+  std::istringstream in( file );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
+  CHECK( result == lorina::return_code::parse_error );
+}
+
+TEST_CASE( "and: out-of-bounds index", "[aiger_reader]" )
 {
   aig_network aig;
 
@@ -56,11 +124,13 @@ TEST_CASE( "out-of-bounds index", "[aiger_reader]" )
                     "6 3 5\n" };
 
   std::istringstream in( file );
-  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ) );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
   CHECK( result == lorina::return_code::parse_error );
 }
 
-TEST_CASE( "negative index", "[aiger_reader]" )
+TEST_CASE( "and: negative index", "[aiger_reader]" )
 {
   aig_network aig;
 
@@ -71,7 +141,26 @@ TEST_CASE( "negative index", "[aiger_reader]" )
                     "6 3 5\n" };
 
   std::istringstream in( file );
-  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ) );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
+  CHECK( result == lorina::return_code::parse_error );
+}
+
+TEST_CASE( "and: non-digit", "[aiger_reader]" )
+{
+  aig_network aig;
+
+  std::string file{ "aag 3 2 0 1 1\n"
+                    "a\n"
+                    "3\n"
+                    "7\n"
+                    "6 3 5\n" };
+
+  std::istringstream in( file );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
   CHECK( result == lorina::return_code::parse_error );
 }
 
