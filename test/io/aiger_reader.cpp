@@ -96,6 +96,51 @@ TEST_CASE( "header: non-digit", "[aiger_reader]" )
   CHECK( result == lorina::return_code::parse_error );
 }
 
+TEST_CASE( "input: out-of-bounds index", "[aiger_reader]" )
+{
+  aig_network aig;
+
+  std::string file{ "aag 1 1 0 1 0\n"
+                    "4\n"
+                    "3\n" };
+
+  std::istringstream in( file );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
+  CHECK( result == lorina::return_code::parse_error );
+}
+
+TEST_CASE( "latch: out-of-bounds index of token 0", "[aiger_reader]" )
+{
+  sequential<aig_network> aig;
+
+  std::string file{ "aag 1 0 1 2 0\n"
+                    "1 3\n"
+                    "2\n"
+                    "3\n" };
+  std::istringstream in( file );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
+  CHECK( result == lorina::return_code::parse_error );
+}
+
+TEST_CASE( "latch: out-of-bounds index of token 1", "[aiger_reader]" )
+{
+  sequential<aig_network> aig;
+
+  std::string file{ "aag 1 0 1 2 0\n"
+                    "2 4\n"
+                    "2\n"
+                    "3\n" };
+  std::istringstream in( file );
+  lorina::text_diagnostics consumer;
+  lorina::diagnostic_engine diag( &consumer );
+  auto const result = lorina::read_ascii_aiger( in, aiger_reader( aig ), &diag );
+  CHECK( result == lorina::return_code::parse_error );
+}
+
 TEST_CASE( "output: out-of-bounds index", "[aiger_reader]" )
 {
   aig_network aig;
